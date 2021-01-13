@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  #Java Projects
+  java-projects:
+    build: ./
+    ports:
+      - '8001:80'
+    volumes: 
+      - ./:/usr/src/app/
+    networks:
+      wpsite:
+        aliases: 
+          - java
+
+  # Database
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+      - wpsite
+        
+  # Wordpress
+  wordpress:
+    build: ./web/
+    depends_on:
+      - db
+    ports:
+      - '8000:80'
+    restart: always
+    volumes: ['./web/:/var/www/html']
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    networks:
+      wpsite:
+        aliases: 
+          - website
+networks:
+  wpsite:
+volumes:
+  db_data:
